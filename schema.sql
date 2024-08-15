@@ -592,3 +592,34 @@ ALTER TABLE "WhiteboardEvent" ADD CONSTRAINT "WhiteboardEvent_liveclass_id_fkey"
 
 -- AddForeignKey
 ALTER TABLE "WhiteboardSlide" ADD CONSTRAINT "WhiteboardSlide_liveclass_id_fkey" FOREIGN KEY ("liveclass_id") REFERENCES "LiveClass"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterSequence
+ALTER SEQUENCE "ConversationToUserMapping_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "Course_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "Lesson_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "MultiChoiceQuestion_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "UserFlashCardGroup_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "WhiteboardEvent_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "WhiteboardSlide_id_seq" MAXVALUE 9223372036854775807;
+
+/*
+  Warnings:
+
+  - Added the required column `is_verified` to the `User` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "is_verified" BOOL NOT NULL;
+

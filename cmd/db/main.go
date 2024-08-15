@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/devyk100/gengou-db/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
-	"time"
 )
 
 func main() {
@@ -41,23 +39,27 @@ func main() {
 	//}
 	//
 	//fmt.Println(user.Name)
-
-	Users, err := queries.GetUsers(ctx)
-	for _, user := range Users {
-		fmt.Println(user.Name, user.UserID, user.EmailID)
-	}
+	err = queries.DeleteUser(ctx, "yashk095")
 	if err != nil {
 		log.Fatal(err.Error())
+		return
 	}
-	User, err := queries.GetAUser(context.Background(), 1)
-	fmt.Println(User.UserID, err)
-	fmt.Println("Exiting")
-	var now time.Time
-	err = conn.QueryRow(ctx, "SELECT NOW()").Scan(&now)
-	if err != nil {
-		log.Fatal("failed to execute query", err)
-	}
+	//Users, err := queries.GetUsers(ctx)
+	//for _, user := range Users {
+	//	fmt.Println(user.Name, user.UserID, user.EmailID)
+	//}
+	//if err != nil {
+	//	log.Fatal(err.Error())
+	//}
+	//User, err := queries.GetAUser(context.Background(), 1)
+	//fmt.Println(User.UserID, err)
+	//fmt.Println("Exiting")
+	//var now time.Time
+	//err = conn.QueryRow(ctx, "SELECT NOW()").Scan(&now)
+	//if err != nil {
+	//	log.Fatal("failed to execute query", err)
+	//}
 
-	fmt.Println(now)
+	//fmt.Println(now)
 
 }

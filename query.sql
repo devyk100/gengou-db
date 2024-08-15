@@ -19,3 +19,8 @@ INSERT INTO "User" (
 ) VALUES (
              $1, $2, $3, $4, 'Learner'
          ) RETURNING *;
+
+
+-- name: DeleteUser :exec
+DELETE FROM "User"
+WHERE user_id = $1;
