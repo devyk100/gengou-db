@@ -1,15 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"github.com/devyk100/gengou-db/internal/database"
+	"github.com/devyk100/gengou-db/internal/redis_internal"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
-func main() {
+func database_trial() {
 
 	err := godotenv.Load("./../../.env")
 	if err != nil {
@@ -62,4 +67,41 @@ func main() {
 
 	//fmt.Println(now)
 
+}
+
+var ctx = context.Background()
+
+func main() {
+	err := godotenv.Load("./../../.env")
+	dsn := os.Getenv("REDIS_URL")
+	db, err := redis_internal.Init(dsn, time.Second*100)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	now := time.Now()
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("Enter your input: ")
+	scanner.Scan()
+	input := scanner.Text()
+	if input == "p" {
+		for a := 0; a < 100; a++ {
+			db.Publish("something", "bla bla bla bhai"+strconv.Itoa(a))
+			//scanner.Scan()
+			//scanner.Text()
+		}
+	} else {
+		var hell chan struct{}
+		db.Subscribe("something", func(payload string) {
+			fmt.Println(payload)
+		}, &hell)
+	}
+	fmt.Println("You entered:", input)
+
+	//fmt.Println(db.Get("foo2"))
+	//fmt.Println(db.Get("foo"))
+	//db.Set("foo2", "bar2")
+	db.HSet("somehtingew1", "fewjao2f", "123132", "fnm21awoifawoeg", "2230")
+	fmt.Println(db.HGet("somehting1", "fewjaof"))
+	fmt.Println(time.Since(now), "Is the time taken")
+	//db.Close()
 }
