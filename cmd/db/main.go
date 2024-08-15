@@ -71,7 +71,7 @@ func database_trial() {
 
 var ctx = context.Background()
 
-func main() {
+func redis_test() {
 	err := godotenv.Load("./../../.env")
 	dsn := os.Getenv("REDIS_URL")
 	db, err := redis_internal.Init(dsn, time.Second*100)
@@ -104,4 +104,8 @@ func main() {
 	fmt.Println(db.HGet("somehting1", "fewjaof"))
 	fmt.Println(time.Since(now), "Is the time taken")
 	//db.Close()
+}
+
+func main() {
+	redis_test()
 }
