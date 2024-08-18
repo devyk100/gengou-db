@@ -108,7 +108,28 @@ func redis_test() {
 }
 
 func main() {
+	err := godotenv.Load("./../../.env")
+	if err != nil {
+		log.Println("Error loading .env file", err.Error())
+	}
+	kafkaUrl := os.Getenv("KAFKA_URL")
+	kafkaPassword := os.Getenv("KAFKA_PASSWORD")
+	kafkaUserName := os.Getenv("KAFKA_USERNAME")
 	//redis_test()
 	//kafka_internal.Producer("Whiteboard")
-	kafka_internal.Consumer("Whiteboard", "user4")
+	instance := kafka_internal.KafkaProducer{}
+	instance.CreateProducer("Whiteboard", kafkaUrl, kafkaUserName, kafkaPassword)
+	instance.Produce("something 1")
+	instance.Produce("something 2")
+	instance.Produce("something 3")
+	instance.CloseProducer()
+	//instance := kafka_internal.KafkaConsumer{}
+	//instance.CreateConsumer("Whiteboard", "user10", []string{kafkaUrl}, kafkaUserName, kafkaPassword)
+	//c := instance.GetMessageChan()
+	//instance.StartConsumer()
+	//defer instance.CloseConsumer()
+	//for {
+	//	val := <-*c
+	//	fmt.Println(string(val.Value))
+	//}
 }

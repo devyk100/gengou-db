@@ -7,6 +7,7 @@ import (
 	"github.com/segmentio/kafka-go/sasl"
 	"github.com/segmentio/kafka-go/sasl/scram"
 	"log"
+	"sync"
 )
 
 type KafkaProducer struct {
@@ -15,10 +16,11 @@ type KafkaProducer struct {
 	username  string
 	password  string
 	mechanism *sasl.Mechanism
-	staller   chan string
+	staller   chan *string
 	w         *kafka.Writer
 	ctx       context.Context
 	cancel    context.CancelFunc
+	waitGroup *sync.WaitGroup
 }
 
 func (instance *KafkaProducer) CreateProducer(topic string, addr string, username string, password string) {
@@ -39,16 +41,22 @@ func (instance *KafkaProducer) CreateProducer(topic string, addr string, usernam
 			TLS:  &tls.Config{},
 		},
 	}
-	instance.staller = make(chan string, 100)
+	instance.staller = make(chan *string, 100)
 	instance.w = &w
+	instance.waitGroup = &sync.WaitGroup{}
+	instance.waitGroup.Add(1)
 	go func(instance *KafkaProducer) {
+		defer instance.waitGroup.Done()
 		for {
 			select {
 			case val, ok := <-instance.staller:
 				if !ok {
 					return
 				}
-				err := instance.w.WriteMessages(instance.ctx, kafka.Message{Value: []byte(val)})
+				if val == nil {
+					return
+				}
+				err := instance.w.WriteMessages(instance.ctx, kafka.Message{Value: []byte(*val)})
 				if err != nil {
 					log.Println(err.Error())
 					return
@@ -62,11 +70,13 @@ func (instance *KafkaProducer) CreateProducer(topic string, addr string, usernam
 }
 
 func (instance *KafkaProducer) Produce(val string) {
-	instance.staller <- val
+	instance.staller <- &val
 	return
 }
 
 func (instance *KafkaProducer) CloseProducer() {
+	instance.staller <- nil
+	instance.waitGroup.Wait()
 	close(instance.staller)
 	err := instance.w.Close()
 	instance.cancel()

@@ -3,6 +3,7 @@ package kafka_internal
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
 	"github.com/segmentio/kafka-go/sasl/scram"
@@ -49,6 +50,7 @@ func (instance *KafkaConsumer) CreateConsumer(topic string, groupId string, brok
 	instance.mechanism = &mechanism
 	instance.isRunning = false
 	instance.messageChan = make(chan kafka.Message, 100)
+	fmt.Println("Connected as a consumer")
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Hour*1000)
 	//defer cancel()
 }
