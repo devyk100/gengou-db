@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/devyk100/gengou-db/internal/database"
+	"github.com/devyk100/gengou-db/internal/kafka_internal"
 	"github.com/devyk100/gengou-db/internal/redis_internal"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
@@ -107,5 +108,7 @@ func redis_test() {
 }
 
 func main() {
-	redis_test()
+	//redis_test()
+	//kafka_internal.Producer("Whiteboard")
+	kafka_internal.Consumer("Whiteboard", "user4")
 }
