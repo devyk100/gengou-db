@@ -20,7 +20,6 @@ INSERT INTO "User" (
              $1, $2, $3, $4, 'Learner'
          ) RETURNING *;
 
-
 -- name: DeleteUser :exec
 DELETE FROM "User"
 WHERE user_id = $1;
@@ -83,7 +82,11 @@ LIMIT $2
 OFFSET $3;
 
 -- name: GetAFlashcard :many
-
+SELECT *
+FROM "Flashcard"
+WHERE deck_id = $1
+LIMIT $2
+OFFSET $3;
 
 -- name: GetFlashcardDecks :many
 SELECT *
@@ -97,7 +100,42 @@ ORDER BY id
     LIMIT $2
 OFFSET $3;
 
-
 -- name: CopyFlashcardDeck: one
+INSERT INTO "FlashcardDeck" (
+    title,
+    max_review_limit_per_day,
+    graduating_interval,
+    learning_steps,
+    new_cards_limit_per_day,
+    easy_interval
+)
+SELECT
+    title,
+    max_review_limit_per_day,
+    graduating_interval,
+    learning_steps,
+    new_cards_limit_per_day,
+    easy_interval
+FROM "FlashcardDeck"
+WHERE id = $1
+    RETURNING id AS new_deck_id;
 
--- name:
+-- name: CreateCopyFlashcardDecKMapping :one
+INSERT INTO "FlashcardDeckToCopiers" (deck_id, user_id, copied_deck_id)
+VALUES ($1, $3, $2);
+
+-- name: CopyFlashcardsForDeck :many
+INSERT INTO "Flashcard"
+(front_side, rear_side, front_audio, rear_audio, front_image, rear_image, review_factor, review_interval,
+ priority_num, unreviewed_priority_num, deck_id)
+SELECT
+    front_side, rear_side, front_audio, rear_audio, front_image, rear_image, review_factor, review_interval,
+    priority_num, unreviewed_priority_num, $2 AS deck_id  --> new deck ID
+FROM "Flashcard"
+WHERE deck_id = $1;  --> old one
+
+
+-- name: FlashcardReview :one
+UPDATE "Flashcard"
+SET review_factor = $2, review_interval = $3, priority_num  $4, unreviewed_priority_num = $5
+WHERE id = $1 RETURNING *;
