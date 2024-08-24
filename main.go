@@ -1,4 +1,4 @@
-package main
+package gengou_db
 
 import (
 	"bufio"

@@ -145,6 +145,49 @@ func (ns NullQuestionItemType) Value() (driver.Value, error) {
 	return string(ns.QuestionItemType), nil
 }
 
+type RegisterMethod string
+
+const (
+	RegisterMethodGoogle RegisterMethod = "Google"
+	RegisterMethodGithub RegisterMethod = "Github"
+	RegisterMethodEmail  RegisterMethod = "Email"
+)
+
+func (e *RegisterMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RegisterMethod(s)
+	case string:
+		*e = RegisterMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RegisterMethod: %T", src)
+	}
+	return nil
+}
+
+type NullRegisterMethod struct {
+	RegisterMethod RegisterMethod
+	Valid          bool // Valid is true if RegisterMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRegisterMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.RegisterMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RegisterMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRegisterMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RegisterMethod), nil
+}
+
 type UserType string
 
 const (
@@ -279,20 +322,42 @@ type FillWholeSentenceSolution struct {
 	QuestionID   int32
 }
 
-type FlashCard struct {
-	ID               int32
-	FrontSide        string
-	BackSide         string
-	QuestionAudioUrl pgtype.Text
-	AnswerAudioUrl   pgtype.Text
-	QuestionImageUrl pgtype.Text
-	AnswerImageUrl   pgtype.Text
-	FlashcardgroupID int32
+type Flashcard struct {
+	ID                    int32
+	FrontSide             string
+	RearSide              string
+	FrontAudio            pgtype.Text
+	RearAudio             pgtype.Text
+	FrontImage            pgtype.Text
+	RearImage             pgtype.Text
+	ReviewFactor          int32
+	ReviewInterval        int32
+	PriorityNum           int32
+	UnreviewedPriorityNum int32
+	DeckID                int32
 }
 
-type FlashCardGroup struct {
-	ID    int32
-	Title string
+type FlashcardDeck struct {
+	ID                   int32
+	Title                string
+	MaxReviewLimitPerDay int32
+	GraduatingInterval   int32
+	LearningSteps        string
+	NewCardsLimitPerDay  int32
+	EasyInterval         int32
+}
+
+type FlashcardDeckToCopier struct {
+	ID           int32
+	DeckID       int32
+	UserID       string
+	CopiedDeckID int32
+}
+
+type FlashcardDeckToEditor struct {
+	ID     int32
+	DeckID int32
+	UserID int32
 }
 
 type Lesson struct {
@@ -386,31 +451,14 @@ type User struct {
 	UserType        UserType
 	EmailID         string
 	Phone           string
+	ProfilePicture  string
+	Password        string
+	RegisterMethod  RegisterMethod
+	IsVerified      bool
+	IsUserIDSet     bool
+	IsPasswordSet   bool
+	IsPhoneSet      bool
 	PastExperiences pgtype.Text
-}
-
-type UserFlashCard struct {
-	ID                       int32
-	UserflashcardgroupID     int32
-	FlashcardID              int32
-	ModifiedFrontSide        string
-	ModifiedBackSide         string
-	ModifiedQuestionAudioUrl pgtype.Text
-	ModifiedAnswerAudioUrl   pgtype.Text
-	ModifiedQuestionImageUrl pgtype.Text
-	ModifiedAnswerImageUrl   pgtype.Text
-	ReviewFactor             int32
-	ReviewInterval           int32
-}
-
-type UserFlashCardGroup struct {
-	ID                 int32
-	FlashcardgroupID   int32
-	GraduatingInterval int32
-	EasyInterval       int32
-	NewCardsPerDay     int32
-	MaxReviewsPerDay   int32
-	LearningSteps      int64
 }
 
 type WhiteboardEvent struct {
