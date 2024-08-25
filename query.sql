@@ -38,9 +38,9 @@ FROM new_deck RETURNING *;
 
 -- name: CreateFlashcard :one
 INSERT INTO "Flashcard" (
-                         front_side, rear_side, deck_id
+                         front_side, rear_side, deck_id, review_factor, review_interval, due_date, unreviewed_priority_num
 ) VALUES (
-          $1,$2, $3
+          $1,$2, $3, $4, $5, $6, $7
          ) RETURNING *;
 
 -- name: UpdateFlashcardFrontSide :one
@@ -100,7 +100,8 @@ ORDER BY id
     LIMIT $2
 OFFSET $3;
 
--- name: CopyFlashcardDeck: one
+-- name: CopyFlashcardDeck :one
+WITH NewDeck AS (
 INSERT INTO "FlashcardDeck" (
     title,
     max_review_limit_per_day,
@@ -116,26 +117,36 @@ SELECT
     learning_steps,
     new_cards_limit_per_day,
     easy_interval
-FROM "FlashcardDeck"
-WHERE id = $1
-    RETURNING id AS new_deck_id;
+FROM "FlashcardDeck" AS old_deck
+WHERE old_deck.id = $1
+    RETURNING id AS new_deck_id
+)
+SELECT new_deck_id FROM NewDeck;
 
 -- name: CreateCopyFlashcardDecKMapping :one
 INSERT INTO "FlashcardDeckToCopiers" (deck_id, user_id, copied_deck_id)
-VALUES ($1, $3, $2);
+VALUES ($1, $3, $2) RETURNING *;
 
 -- name: CopyFlashcardsForDeck :many
-INSERT INTO "Flashcard"
-(front_side, rear_side, front_audio, rear_audio, front_image, rear_image, review_factor, review_interval,
- priority_num, unreviewed_priority_num, deck_id)
+WITH CopiedFlashcards AS (
+INSERT INTO "Flashcard" (
+    front_side, rear_side, front_audio, rear_audio, front_image, rear_image,
+    review_factor, review_interval, due_date, unreviewed_priority_num, deck_id
+)
 SELECT
-    front_side, rear_side, front_audio, rear_audio, front_image, rear_image, review_factor, review_interval,
-    priority_num, unreviewed_priority_num, $2 AS deck_id  --> new deck ID
-FROM "Flashcard"
-WHERE deck_id = $1;  --> old one
+    front_side, rear_side, front_audio, rear_audio, front_image, rear_image,
+    review_factor, review_interval, due_date, unreviewed_priority_num, $2  -- new deck ID
+FROM "Flashcard" AS old_flashcard
+WHERE old_flashcard.deck_id = $1  -- old deck ID
+    RETURNING id, front_side, rear_side, front_audio, rear_audio, front_image, rear_image,
+              review_factor, review_interval, due_date, unreviewed_priority_num, deck_id
+)
+SELECT * FROM CopiedFlashcards;
+
+
 
 
 -- name: FlashcardReview :one
 UPDATE "Flashcard"
-SET review_factor = $2, review_interval = $3, priority_num  $4, unreviewed_priority_num = $5
+SET review_factor = $2, review_interval = $3, due_date = $4, unreviewed_priority_num = $5
 WHERE id = $1 RETURNING *;

@@ -631,3 +631,39 @@ ALTER TABLE "WhiteboardEvent" ADD CONSTRAINT "WhiteboardEvent_liveclass_id_fkey"
 
 -- AddForeignKey
 ALTER TABLE "WhiteboardSlide" ADD CONSTRAINT "WhiteboardSlide_liveclass_id_fkey" FOREIGN KEY ("liveclass_id") REFERENCES "LiveClass"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+/*
+  Warnings:
+
+  - You are about to drop the column `priority_num` on the `Flashcard` table. All the data in the column will be lost.
+  - Added the required column `due_date` to the `Flashcard` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterSequence
+ALTER SEQUENCE "ConversationToUserMapping_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "Course_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "Lesson_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "MultiChoiceQuestion_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "WhiteboardEvent_id_seq" MAXVALUE 9223372036854775807;
+
+-- AlterSequence
+ALTER SEQUENCE "WhiteboardSlide_id_seq" MAXVALUE 9223372036854775807;
+
+-- DropIndex
+DROP INDEX "Flashcard_priority_num_idx";
+
+-- AlterTable
+ALTER TABLE "Flashcard" DROP COLUMN "priority_num";
+ALTER TABLE "Flashcard" ADD COLUMN     "due_date" TIMESTAMP(3) NOT NULL;
+
+-- CreateIndex
+CREATE INDEX "Flashcard_due_date_idx" ON "Flashcard"("due_date");

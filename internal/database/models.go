@@ -332,9 +332,9 @@ type Flashcard struct {
 	RearImage             pgtype.Text
 	ReviewFactor          int32
 	ReviewInterval        int32
-	PriorityNum           int32
 	UnreviewedPriorityNum int32
 	DeckID                int32
+	DueDate               pgtype.Timestamp
 }
 
 type FlashcardDeck struct {
